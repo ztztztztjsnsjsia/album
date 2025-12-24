@@ -805,6 +805,210 @@ audio.addEventListener("play", () => mini.classList.add("show"));
 audio.addEventListener("pause", () => mini.classList.add("show"));
 </script> 
 
+<!-- =========================================================
+APPLE MUSIC SCRUB BAR + LOCK-SCREEN FULLSCREEN PLAYER
+DROP-IN BLOCK — PASTE AT VERY END OF FILE
+Pure additive. No edits to existing code required.
+========================================================= -->
+
+<style>
+/* ========= FULLSCREEN PLAYER ========= */
+.fullscreen-player {
+  position: fixed;
+  inset: 0;
+  background: #000;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px env(safe-area-inset-bottom);
+  transform: translateY(100%);
+  transition: transform 0.35s ease;
+}
+
+.fullscreen-player.show {
+  transform: translateY(0);
+}
+
+.fullscreen-cover {
+  width: 82vw;
+  max-width: 360px;
+  aspect-ratio: 1 / 1;
+  background: url("images/cover.jpg") center/cover no-repeat;
+  margin-bottom: 36px;
+  box-shadow: 0 50px 120px rgba(0,0,0,0.95);
+}
+
+.fullscreen-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  text-align: center;
+}
+
+.fullscreen-artist {
+  font-size: 14px;
+  color: #9b9b9b;
+  margin-bottom: 36px;
+  text-align: center;
+}
+
+/* ========= SCRUB BAR ========= */
+.scrub-container {
+  width: 100%;
+  max-width: 420px;
+}
+
+.scrub-bar {
+  width: 100%;
+  height: 4px;
+  background: #2a2a2a;
+  border-radius: 10px;
+  position: relative;
+  cursor: pointer;
+}
+
+.scrub-fill {
+  height: 100%;
+  background: #fff;
+  width: 0%;
+  border-radius: 10px;
+}
+
+.scrub-thumb {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 12px;
+  height: 12px;
+  background: #fff;
+  border-radius: 50%;
+}
+
+.scrub-time {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #9b9b9b;
+  margin-top: 8px;
+}
+
+/* ========= FULLSCREEN CONTROLS ========= */
+.fullscreen-controls {
+  display: flex;
+  gap: 36px;
+  margin-top: 40px;
+}
+
+.fullscreen-controls button {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 22px;
+}
+
+/* ========= CLOSE GESTURE ========= */
+.close-fullscreen {
+  position: absolute;
+  top: env(safe-area-inset-top);
+  left: 0;
+  right: 0;
+  height: 40px;
+}
+</style>
+
+<script>
+/* =========================================================
+FULLSCREEN PLAYER + APPLE MUSIC SCRUB LOGIC
+========================================================= */
+
+/* Create fullscreen player */
+const fs = document.createElement("div");
+fs.className = "fullscreen-player";
+fs.innerHTML = `
+  <div class="close-fullscreen"></div>
+  <div class="fullscreen-cover"></div>
+  <div class="fullscreen-title" id="fsTitle">Track</div>
+  <div class="fullscreen-artist">Your Album</div>
+
+  <div class="scrub-container">
+    <div class="scrub-bar" id="scrubBar">
+      <div class="scrub-fill" id="scrubFill"></div>
+      <div class="scrub-thumb" id="scrubThumb"></div>
+    </div>
+    <div class="scrub-time">
+      <span id="currentTime">0:00</span>
+      <span id="duration">0:00</span>
+    </div>
+  </div>
+
+  <div class="fullscreen-controls">
+    <button id="fsPrev">⏮</button>
+    <button id="fsPlay">⏯</button>
+    <button id="fsNext">⏭</button>
+  </div>
+`;
+document.body.appendChild(fs);
+
+/* Elements */
+const fsTitle = document.getElementById("fsTitle");
+const fsPlay = document.getElementById("fsPlay");
+const fsPrev = document.getElementById("fsPrev");
+const fsNext = document.getElementById("fsNext");
+const scrubBar = document.getElementById("scrubBar");
+const scrubFill = document.getElementById("scrubFill");
+const scrubThumb = document.getElementById("scrubThumb");
+const currentTimeEl = document.getElementById("currentTime");
+const durationEl = document.getElementById("duration");
+
+/* Open fullscreen from mini player */
+mini.addEventListener("click", e => {
+  if (!e.target.classList.contains("mini-play")) {
+    fs.classList.add("show");
+  }
+});
+
+/* Close gesture */
+fs.querySelector(".close-fullscreen").onclick = () => {
+  fs.classList.remove("show");
+};
+
+/* Sync track info */
+function syncFullscreen() {
+  fsTitle.textContent = tracks[currentTrack].title;
+  fsPlay.textContent = isPlaying ? "❚❚" : "▶";
+}
+audio.addEventListener("play", syncFullscreen);
+audio.addEventListener("pause", syncFullscreen);
+
+/* Controls */
+fsPlay.onclick = () => isPlaying ? pause() : play();
+fsPrev.onclick = () => prevTrack();
+fsNext.onclick = () => nextTrack();
+
+/* Scrub bar update */
+audio.addEventListener("timeupdate", () => {
+  if (!audio.duration) return;
+  const p = audio.currentTime / audio.duration;
+  scrubFill.style.width = (p * 100) + "%";
+  scrubThumb.style.left = (p * 100) + "%";
+
+  const fmt = t =>
+    `${Math.floor(t / 60)}:${("0" + Math.floor(t % 60)).slice(-2)}`;
+
+  currentTimeEl.textContent = fmt(audio.currentTime);
+  durationEl.textContent = fmt(audio.duration);
+});
+
+/* Scrub interaction */
+scrubBar.onclick = e => {
+  const rect = scrubBar.getBoundingClientRect();
+  const p = (e.clientX - rect.left) / rect.width;
+  audio.currentTime = p * audio.duration;
+};
+</script>
+
 
 </body>
 </html>
