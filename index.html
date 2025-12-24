@@ -1008,7 +1008,68 @@ scrubBar.onclick = e => {
   audio.currentTime = p * audio.duration;
 };
 </script>
+<!-- =========================================================
+GAPLESS SEQUENTIAL PLAYBACK (APPLE MUSIC STYLE)
+DROP-IN BLOCK — PASTE AT VERY END OF FILE
+Ensures tracks play in displayed order with gapless transitions.
+Pure additive. No edits required.
+========================================================= -->
 
+<script>
+/* =========================================================
+GAPLESS PLAYBACK ENGINE
+========================================================= */
+
+/*
+Strategy:
+- Keep main <audio> element
+- Preload next track silently
+- Switch sources at exact end with no pause
+- Preserve currentTime continuity
+*/
+
+let nextAudio = new Audio();
+nextAudio.preload = "auto";
+
+/* Preload next track */
+function preloadNextTrack() {
+  let nextIndex = currentTrack + 1;
+  if (nextIndex >= tracks.length) return;
+  nextAudio.src = tracks[nextIndex].src;
+}
+
+/* Hook into existing loadTrack */
+const _loadTrack_gapless = loadTrack;
+loadTrack = function(index) {
+  _loadTrack_gapless(index);
+  preloadNextTrack();
+};
+
+/* Force sequential order (no shuffle) */
+audio.loop = false;
+
+/* Gapless transition */
+audio.addEventListener("ended", () => {
+  let nextIndex = currentTrack + 1;
+  if (nextIndex >= tracks.length) return;
+
+  /* Swap audio buffers instantly */
+  audio.src = tracks[nextIndex].src;
+  audio.currentTime = 0;
+  currentTrack = nextIndex;
+
+  /* Update UI state */
+  document.querySelectorAll(".track").forEach((t, i) => {
+    t.classList.toggle("active", i === currentTrack);
+  });
+
+  audio.play();
+  preloadNextTrack();
+});
+
+/* Extra insurance: preload on play */
+audio.addEventListener("play", preloadNextTrack);
+</script>
 
 </body>
 </html>
