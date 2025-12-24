@@ -649,5 +649,162 @@ document.addEventListener("keydown", e => {
   if (e.code === "Space") e.preventDefault();
 });
 </script>
+<!-- =========================================================
+FINAL DROP-IN BLOCK — STICKY COLLAPSING HEADER + MINI PLAYER
+Paste this AT THE VERY END of your existing file.
+No edits required. Pure additive overrides.
+========================================================= -->
+
+<style>
+/* ========= STICKY COLLAPSING HEADER ========= */
+@media (max-width: 9999px) {
+
+  .album-header {
+    position: sticky !important;
+    top: 0;
+    z-index: 20;
+    transition: padding 0.25s ease, transform 0.25s ease;
+  }
+
+  .album-header.collapsed {
+    padding: 18px 20px 14px !important;
+  }
+
+  .album-header.collapsed .album-cover {
+    width: 44px !important;
+    height: 44px !important;
+    margin-bottom: 0 !important;
+    box-shadow: none !important;
+  }
+
+  .album-header.collapsed .album-info h1 {
+    font-size: 15px !important;
+    font-weight: 600 !important;
+  }
+
+  .album-header.collapsed .album-info p {
+    display: none !important;
+  }
+
+  .album-header.collapsed {
+    flex-direction: row !important;
+    justify-content: flex-start !important;
+    gap: 12px !important;
+  }
+
+  /* ========= MINI PLAYER ========= */
+  .mini-player {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: env(safe-area-inset-bottom);
+    height: 64px;
+    background: #111;
+    border-top: 1px solid #1f1f1f;
+    display: flex;
+    align-items: center;
+    padding: 0 14px;
+    gap: 12px;
+    transform: translateY(100%);
+    transition: transform 0.3s ease;
+    z-index: 50;
+  }
+
+  .mini-player.show {
+    transform: translateY(0);
+  }
+
+  .mini-cover {
+    width: 40px;
+    height: 40px;
+    background: url("images/cover.jpg") center/cover no-repeat;
+    flex-shrink: 0;
+  }
+
+  .mini-info {
+    flex: 1;
+    overflow: hidden;
+  }
+
+  .mini-info div {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 14px;
+  }
+
+  .mini-info small {
+    color: #9b9b9b;
+    font-size: 12px;
+  }
+
+  .mini-play {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: #fff;
+    color: #000;
+    border: none;
+    font-size: 14px;
+    font-weight: 600;
+  }
+}
+</style>
+
+<script>
+/* =========================================================
+STICKY HEADER + MINI PLAYER LOGIC
+========================================================= */
+
+/* Create mini player */
+const mini = document.createElement("div");
+mini.className = "mini-player";
+mini.innerHTML = `
+  <div class="mini-cover"></div>
+  <div class="mini-info">
+    <div id="miniTitle">Track</div>
+    <small>Your Album</small>
+  </div>
+  <button class="mini-play" id="miniPlay">▶</button>
+`;
+document.body.appendChild(mini);
+
+const miniPlay = document.getElementById("miniPlay");
+const miniTitle = document.getElementById("miniTitle");
+
+/* Sync mini player */
+function updateMini() {
+  miniTitle.textContent = tracks[currentTrack].title;
+  mini.classList.add("show");
+  miniPlay.textContent = isPlaying ? "❚❚" : "▶";
+}
+
+const _loadTrack = loadTrack;
+loadTrack = function (i) {
+  _loadTrack(i);
+  updateMini();
+};
+
+miniPlay.onclick = () => {
+  isPlaying ? pause() : play();
+  miniPlay.textContent = isPlaying ? "❚❚" : "▶";
+};
+
+/* Header collapse on scroll */
+const header = document.querySelector(".album-header");
+window.addEventListener("scroll", () => {
+  if (window.scrollY > 120) {
+    header.classList.add("collapsed");
+  } else {
+    header.classList.remove("collapsed");
+  }
+});
+
+/* Show mini player when playing */
+audio.addEventListener("play", () => mini.classList.add("show"));
+audio.addEventListener("pause", () => mini.classList.add("show"));
+</script> 
+
+
 </body>
 </html>
