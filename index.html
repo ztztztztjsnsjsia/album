@@ -140,7 +140,68 @@
         aspect-ratio: 1 / 1;
       }
     }
-  </style>
+<style>
+  /* === BLURRED ALBUM HEADER BACKDROP === */
+  .album-header {
+    position: relative;
+    padding: 40px;
+    border-radius: 18px;
+    overflow: hidden;
+  }
+
+  .album-header::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: url("images/cover.jpg") center/cover no-repeat;
+    filter: blur(40px) brightness(0.35);
+    transform: scale(1.2);
+    z-index: 0;
+  }
+
+  .album-header > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* === ULTRA EDITORIAL TRACKLIST === */
+  .track {
+    padding: 18px 12px;
+    border-radius: 0;
+    border-bottom: 1px solid #222;
+    background: none !important;
+  }
+
+  .track span {
+    display: none;
+  }
+
+  .track.active {
+    color: #ffffff;
+  }
+
+  .tracklist {
+    border-top: 1px solid #222;
+  }
+
+  /* === APPLE MUSIC STYLE TYPOGRAPHY TWEAK === */
+  .album-info h1 {
+    letter-spacing: -0.5px;
+  }
+
+  /* === SMOOTHER PLAYER FEEL === */
+  .progress-filled {
+    transition: width 0.15s linear;
+  }
+
+  .play-btn {
+    transition: transform 0.15s ease;
+  }
+
+  .play-btn:active {
+    transform: scale(0.92);
+  }
+</style>
 </head>
 <body>
 
