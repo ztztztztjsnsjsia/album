@@ -302,6 +302,36 @@
   });
 
   loadTrack(0);
+  /* === KEYBOARD CONTROLS === */
+  document.addEventListener("keydown", e => {
+    if (e.code === "Space") {
+      e.preventDefault();
+      isPlaying ? pause() : play();
+    }
+
+    if (e.code === "ArrowRight") {
+      nextTrack();
+    }
+
+    if (e.code === "ArrowLeft") {
+      prevTrack();
+    }
+  });
+
+  function nextTrack() {
+    let next = currentTrack + 1;
+    if (next >= tracks.length) next = 0;
+    loadTrack(next);
+  }
+
+  function prevTrack() {
+    let prev = currentTrack - 1;
+    if (prev < 0) prev = tracks.length - 1;
+    loadTrack(prev);
+  }
+
+  /* === AUTO PLAY NEXT TRACK === */
+  audio.addEventListener("ended", nextTrack);
 </script>
 
 </body>
