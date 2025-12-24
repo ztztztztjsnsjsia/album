@@ -1070,6 +1070,127 @@ audio.addEventListener("ended", () => {
 /* Extra insurance: preload on play */
 audio.addEventListener("play", preloadNextTrack);
 </script>
+<!-- =========================================================
+PLAYER CLOSE FUNCTIONALITY (DROP-IN)
+Allows mini or fullscreen player to be closed by user.
+Paste at the very end of your file.
+========================================================= -->
 
+<script>
+/* ================= CLOSE MINI PLAYER ================= */
+const miniClose = document.createElement("div");
+miniClose.style.position = "absolute";
+miniClose.style.top = "2px";
+miniClose.style.right = "8px";
+miniClose.style.width = "28px";
+miniClose.style.height = "28px";
+miniClose.style.cursor = "pointer";
+miniClose.style.zIndex = "60";
+miniClose.innerHTML = "✕";
+miniClose.style.color = "#fff";
+miniClose.style.fontSize = "18px";
+miniClose.style.display = "flex";
+miniClose.style.alignItems = "center";
+miniClose.style.justifyContent = "center";
+miniClose.style.userSelect = "none";
+
+mini.appendChild(miniClose);
+
+miniClose.onclick = (e) => {
+  e.stopPropagation();
+  mini.classList.remove("show");
+  audio.pause();
+};
+
+/* ================= CLOSE FULLSCREEN PLAYER ================= */
+const fsClose = document.createElement("div");
+fsClose.style.position = "absolute";
+fsClose.style.top = "env(safe-area-inset-top, 10px)";
+fsClose.style.right = "20px";
+fsClose.style.width = "36px";
+fsClose.style.height = "36px";
+fsClose.style.cursor = "pointer";
+fsClose.style.zIndex = "110";
+fsClose.style.color = "#fff";
+fsClose.style.fontSize = "22px";
+fsClose.style.display = "flex";
+fsClose.style.alignItems = "center";
+fsClose.style.justifyContent = "center";
+fsClose.style.userSelect = "none";
+fsClose.innerHTML = "✕";
+
+fs.appendChild(fsClose);
+
+fsClose.onclick = () => {
+  fs.classList.remove("show");
+  audio.pause();
+};
+</script>
+<!-- =========================================================
+FIX TRACKLIST SCROLL + ENSURE SEQUENTIAL PLAY AFTER TRACK SELECTION
+DROP-IN — Paste at the very end of your file
+========================================================= -->
+
+<script>
+/* ================= FIX TRACKLIST SCROLL ================= */
+
+/*
+Problem: sticky headers, fullscreen, or mini player may block scrolling.
+Fix: ensure container scrolls freely.
+*/
+
+const tracklistContainer = document.querySelector(".tracklist");
+if (tracklistContainer) {
+  tracklistContainer.style.overflowY = "auto";
+  tracklistContainer.style.webkitOverflowScrolling = "touch"; // smooth scrolling on iOS
+  tracklistContainer.style.maxHeight = "60vh"; // adjust as needed
+}
+
+/* ================= SEQUENTIAL PLAY AFTER TRACK SELECTION ================= */
+
+/* Override previous click behavior to ensure next track in order plays */
+document.querySelectorAll(".track").forEach((trackEl, idx) => {
+  trackEl.onclick = () => {
+    currentTrack = idx;
+    audio.src = tracks[idx].src;
+    audio.currentTime = 0;
+    audio.play();
+    
+    /* Highlight active track */
+    document.querySelectorAll(".track").forEach((t, i) => {
+      t.classList.toggle("active", i === currentTrack);
+    });
+
+    /* Preload next track for gapless sequential playback */
+    let nextIndex = currentTrack + 1;
+    if (nextIndex < tracks.length) {
+      nextAudio.src = tracks[nextIndex].src;
+      nextAudio.preload = "auto";
+    }
+  };
+});
+
+/* Ensure audio ended event plays next track in tracklist order */
+audio.addEventListener("ended", () => {
+  let nextIndex = currentTrack + 1;
+  if (nextIndex >= tracks.length) return; // end of album
+  currentTrack = nextIndex;
+  audio.src = tracks[nextIndex].src;
+  audio.currentTime = 0;
+  audio.play();
+
+  /* Highlight active track */
+  document.querySelectorAll(".track").forEach((t, i) => {
+    t.classList.toggle("active", i === currentTrack);
+  });
+
+  /* Preload the following track */
+  let nextNextIndex = currentTrack + 1;
+  if (nextNextIndex < tracks.length) {
+    nextAudio.src = tracks[nextNextIndex].src;
+    nextAudio.preload = "auto";
+  }
+});
+</script>
 </body>
 </html>
