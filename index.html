@@ -477,5 +477,177 @@ audio.addEventListener("ended", () => {
 /* Disable progress visuals (mobile AM doesn’t show them here) */
 audio.ontimeupdate = null;
 </script>
+<!-- =========================================================
+MOBILE APPLE MUSIC — FULL DROP-IN OVERRIDES (PASTE AT VERY END)
+No edits required to existing code. Pure overrides only.
+========================================================= -->
+
+<style>
+/* ========= GLOBAL MOBILE RESET ========= */
+@media (max-width: 9999px) {
+  html, body {
+    background: #000 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overscroll-behavior: none;
+  }
+
+  .container {
+    max-width: 100% !important;
+    padding: 0 !important;
+  }
+
+  /* ========= NAV SAFE AREA ========= */
+  body::before {
+    content: "";
+    display: block;
+    height: env(safe-area-inset-top);
+  }
+
+  /* ========= ALBUM HEADER ========= */
+  .album-header {
+    flex-direction: column !important;
+    align-items: center !important;
+    padding: 96px 20px 32px !important;
+    position: relative !important;
+    border-radius: 0 !important;
+    overflow: hidden !important;
+  }
+
+  .album-header::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: url("images/cover.jpg") center/cover no-repeat;
+    filter: blur(70px) brightness(0.25);
+    transform: scale(1.4);
+    z-index: 0;
+  }
+
+  .album-header > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ========= ALBUM ART ========= */
+  .album-cover {
+    width: 260px !important;
+    height: 260px !important;
+    margin-bottom: 22px !important;
+    border-radius: 0 !important;
+    box-shadow: 0 50px 110px rgba(0,0,0,0.95) !important;
+  }
+
+  /* ========= META ========= */
+  .album-info {
+    text-align: center !important;
+  }
+
+  .album-info h1 {
+    font-size: 28px !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.4px !important;
+    margin: 0 0 6px !important;
+  }
+
+  .album-info p {
+    font-size: 13px !important;
+    color: #9c9c9c !important;
+    margin: 0 !important;
+  }
+
+  /* ========= PLAY BUTTON ========= */
+  .player {
+    background: none !important;
+    margin: 26px 20px 0 !important;
+    padding: 0 !important;
+  }
+
+  .controls {
+    flex-direction: column !important;
+    gap: 0 !important;
+  }
+
+  .play-btn {
+    width: 100% !important;
+    height: 52px !important;
+    border-radius: 14px !important;
+    background: #fff !important;
+    color: #000 !important;
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    letter-spacing: -0.2px !important;
+  }
+
+  .progress,
+  .time {
+    display: none !important;
+  }
+
+  /* ========= TRACKLIST ========= */
+  .tracklist {
+    margin-top: 28px !important;
+  }
+
+  .track {
+    padding: 18px 20px !important;
+    border-bottom: 1px solid #1c1c1c !important;
+    font-size: 15px !important;
+    font-weight: 400 !important;
+    background: none !important;
+  }
+
+  .track span {
+    display: none !important;
+  }
+
+  .track.active {
+    color: #fff !important;
+  }
+
+  .track:hover {
+    background: none !important;
+  }
+
+  footer {
+    display: none !important;
+  }
+}
+</style>
+
+<script>
+/* =========================================================
+APPLE MUSIC MOBILE BEHAVIOR — SAFE OVERRIDES
+========================================================= */
+
+/* Button label behavior */
+const _play = play;
+const _pause = pause;
+
+play = function () {
+  _play();
+  playBtn.textContent = "Pause";
+};
+
+pause = function () {
+  _pause();
+  playBtn.textContent = "Play";
+};
+
+/* Auto-advance */
+audio.addEventListener("ended", () => {
+  let i = currentTrack + 1;
+  if (i >= tracks.length) i = 0;
+  loadTrack(i);
+});
+
+/* Disable progress tracking visuals */
+audio.ontimeupdate = null;
+
+/* Prevent spacebar scroll on mobile keyboards */
+document.addEventListener("keydown", e => {
+  if (e.code === "Space") e.preventDefault();
+});
+</script>
 </body>
 </html>
